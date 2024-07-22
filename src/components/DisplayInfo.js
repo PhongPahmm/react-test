@@ -6,10 +6,12 @@ class DisplayInfo extends React.Component {
         console.log(listUsers)
         return (
             <div>
-                {listUsers.map((user) => {
+                {listUsers.map((user, index) => {
                     console.log(user)
                     return (
-                        <div>My name is</div>
+                        <div key={user.id}>
+                            <div>My name is</div>
+                        </div>
                     )
                 })}
             </div>
