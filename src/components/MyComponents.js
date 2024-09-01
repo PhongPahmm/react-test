@@ -5,13 +5,13 @@ import DisplayInfo from "./DisplayInfo";
 class MyComponent extends React.Component {
     state = {
         listUsers: [
-            { id: 1, name: 'PhongPahm', age: '21' },
+            { id: 1, name: 'PhongPahm', age: '17' },
             { id: 2, name: 'PhongPahm2', age: '22' },
             { id: 3, name: 'PhongPahm3', age: '23' }
         ]
     }
     render() {
-        const myInfo = ['abb', 'hfj', 'dhf']
+
         return (
             <div>
                 <UserInfo />
