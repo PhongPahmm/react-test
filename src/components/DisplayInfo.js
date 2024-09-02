@@ -27,8 +27,11 @@ class DisplayInfo extends React.Component {
                         {listUsers.map((user, index) => {
                             return (
                                 <div key={index} className={+user.age > 18 ? "red" : "green"}>
-                                    <div style={{ color: "yellow", paddingTop: "20px" }}>My name is {user.name}</div>
+                                    <div>My name is {user.name}</div>
                                     <div>My age is {user.age}</div>
+                                    <div>
+                                        <button onClick={() => { this.props.handleDeleteUser(user.id) }}>Delete</button>
+                                    </div>
                                     <hr></hr>
                                 </div>
                             )

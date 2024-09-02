@@ -15,6 +15,13 @@ class MyComponent extends React.Component {
             listUsers: [...this.state.listUsers, newUser]
         })
     }
+    handleDeleteUser = (userId) => {
+        let tempListuser = this.state.listUsers
+        tempListuser = tempListuser.filter(item => item.id !== userId)
+        this.setState({
+            listUsers: tempListuser
+        })
+    }
     render() {
         return (
             <>
@@ -25,6 +32,7 @@ class MyComponent extends React.Component {
                     <hr></hr>
                     <DisplayInfo
                         listUsers={this.state.listUsers}
+                        handleDeleteUser={this.handleDeleteUser}
                     />
                 </div>
                 <div className="b"></div>
