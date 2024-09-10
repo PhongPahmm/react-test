@@ -9,8 +9,10 @@ body {
 
 .app-container {
   .header-container {
-    .navbar-nav .nav-link.active {
-      color: rgb(62, 192, 192);
+    .navbar-nav {
+      .nav-link.active {
+        color: rgb(62, 192, 192);
+      }
     }
   }
 }

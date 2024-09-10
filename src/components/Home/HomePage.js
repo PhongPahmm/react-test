@@ -1,7 +1,9 @@
+import imageHomePage from "../../assets/hero.webp"
+
 const HomePage = (props) => {
     return (
         <div className="homepage-container">
-            Home page component
+            <img src={imageHomePage}></img>
         </div>
     )
 }
