@@ -42,15 +42,15 @@ body {
   .homepage-container {
     display: flex;
 
-    img {
-      height: 90vh;
+    .hompage-img img {
+      width: 100%;
     }
 
     .homepage-content {
       display: flex;
       flex-direction: column;
       gap: 30px;
-      padding-top: 100px;
+      padding-top: 10vh;
     }
 
     .title-1 {
