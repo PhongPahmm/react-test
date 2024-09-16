@@ -1,4 +1,5 @@
 import 'react-pro-sidebar/dist/css/styles.css'
+
 import {
     ProSidebar,
     Menu,
@@ -12,6 +13,8 @@ import { FaTachometerAlt, FaGem, FaList, FaGithub, FaRegLaughWink, FaHeart } fro
 import sidebarBg from '../../assets/bg2.jpg';
 import { FaReact } from "react-icons/fa";
 import { AiFillDashboard } from "react-icons/ai";
+import './SideBar.scss'
+import { Link } from 'react-router-dom';
 const SideBar = ({ image, collapsed, toggled, handleToggleSidebar }) => {
     return (
         <>
@@ -47,6 +50,7 @@ const SideBar = ({ image, collapsed, toggled, handleToggleSidebar }) => {
                         // suffix={<span className="badge red">new</span>}
                         >
                             Dashboard
+                            <Link to="/admins"></Link>
                         </MenuItem>
                         {/* <MenuItem icon={<FaGem />}>Features</MenuItem> */}
                     </Menu>
@@ -56,7 +60,9 @@ const SideBar = ({ image, collapsed, toggled, handleToggleSidebar }) => {
                             icon={<FaGem />}
                             title={"Features"}
                         >
-                            <MenuItem> User Management</MenuItem>
+                            <MenuItem> User Management
+                                <Link to="/admins/manage-users"></Link>
+                            </MenuItem>
                             <MenuItem> Quizz Management</MenuItem>
                             <MenuItem> Question Management</MenuItem>
                         </SubMenu>
@@ -71,14 +77,14 @@ const SideBar = ({ image, collapsed, toggled, handleToggleSidebar }) => {
                         }}
                     >
                         <a
-                            href="https://github.com/azouaoui-med/react-pro-sidebar"
+                            href="https://github.com/PhongPahmm"
                             target="_blank"
                             className="sidebar-btn"
                             rel="noopener noreferrer"
                         >
                             <FaGithub />
                             <span style={{ whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
-                                viewSource
+                                PhongPahmm
                             </span>
                         </a>
                     </div>
