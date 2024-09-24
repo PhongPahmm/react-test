@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { FaFileCirclePlus } from "react-icons/fa6";
+import axios from 'axios';
 
 const ModalCreateUser = (props) => {
     const { show, setShow } = props;
@@ -19,6 +20,18 @@ const ModalCreateUser = (props) => {
             setPreviewImage(URL.createObjectURL(event.target.files[0]));
             setImage(event.target.files[0])
         }
+    }
+
+    const handleSubmitCreateUser = () => {
+        const form = new FormData();
+        form.append('email', email);
+        form.append('Username', Username);
+        form.append('password', password);
+        form.append('image', image);
+        form.append('role', role);
+
+
+        axios.post('http://localhost:8081/api/v1/participant', form)
     }
     return (
         <>
@@ -86,7 +99,7 @@ const ModalCreateUser = (props) => {
                     <Button variant="secondary" onClick={handleClose}>
                         Close
                     </Button>
-                    <Button variant="primary" onClick={handleClose}>
+                    <Button variant="primary" onClick={() => handleSubmitCreateUser()}>
                         Save
                     </Button>
                 </Modal.Footer>
