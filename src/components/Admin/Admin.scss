@@ -7,4 +7,16 @@
         }
     }
 
+    .admin-content {
+        width: 100%;
+
+        .admin-header {
+            border: 2px solid green;
+        }
+
+        .admin-main {
+            border: 1px solid red;
+        }
+    }
+
 }
