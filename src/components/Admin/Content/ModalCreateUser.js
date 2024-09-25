@@ -3,17 +3,25 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { FaFileCirclePlus } from "react-icons/fa6";
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const ModalCreateUser = (props) => {
     const { show, setShow } = props;
 
-    const handleClose = () => setShow(false);
+    const handleClose = () => {
+        setShow(false)
+        setEmail("")
+        setUsername("")
+        setPassword("")
+        setImage("")
+        setPreviewImage("")
+    };
 
     const [email, setEmail] = useState("")
-    const [Username, setUsername] = useState("")
+    const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [image, setImage] = useState("")
-    const [role, setRole] = useState("")
+    const [role, setRole] = useState("USER")
     const [previewImage, setPreviewImage] = useState("")
     const handleUploadImage = (event) => {
         if (event.target.files && event.target.files[0]) {
@@ -21,17 +29,42 @@ const ModalCreateUser = (props) => {
             setImage(event.target.files[0])
         }
     }
-
-    const handleSubmitCreateUser = () => {
+    const validateEmail = (email) => {
+        return String(email)
+            .toLowerCase()
+            .match(
+                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+            );
+    };
+    const handleSubmitCreateUser = async () => {
+        const isValidEmail = validateEmail(email)
+        if (!isValidEmail) {
+            toast.error("invalid email")
+            return;
+        }
+        if (!username) {
+            toast.error("invalid username")
+            return;
+        }
+        if (!password) {
+            toast.error("invalid password")
+            return;
+        }
         const form = new FormData();
         form.append('email', email);
-        form.append('Username', Username);
+        form.append('username', username);
         form.append('password', password);
         form.append('image', image);
         form.append('role', role);
 
 
-        axios.post('http://localhost:8081/api/v1/participant', form)
+        let res = await axios.post('http://localhost:8081/api/v1/participant', form)
+        if (res.data && res.data.EC === 0) {
+            toast.success(res.data.EM)
+            handleClose()
+        } else {
+            toast.error(res.data.EM)
+        }
     }
     return (
         <>
@@ -63,7 +96,7 @@ const ModalCreateUser = (props) => {
                             <label className="form-label">Username</label>
                             <input type="text"
                                 className="form-control"
-                                value={Username}
+                                value={username}
                                 onChange={(event) => setUsername(event.target.value)} />
                         </div>
                         <div className="col-md-6">
