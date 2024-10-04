@@ -1,8 +1,9 @@
-import { useState } from "react";
 
 const TableUser = (props) => {
 
-    const [listUsers, setListusers] = useState([])
+    const { listUsers } = props
+
+
     return (
         <>
             <table className="table table-bordered table-hover">
@@ -12,18 +13,23 @@ const TableUser = (props) => {
                         <th scope="col">Username</th>
                         <th scope="col">Email</th>
                         <th scope="col">Role</th>
+                        <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     {listUsers && listUsers.length > 0 &&
                         listUsers.map((item, index) => {
                             return (
-                                <tr>
+                                <tr key={`table-user-${index}`}>
                                     <td>{index + 1}</td>
-                                    <td>{item.Username}</td>
-                                    <td>{item.Email}</td>
-                                    <td>{item.Role}</td>
+                                    <td>{item.username}</td>
+                                    <td>{item.email}</td>
+                                    <td>{item.role}</td>
+                                    <td><button className="btn btn-secondary">View</button>
+                                        <button className="btn btn-warning mx-3">Edit</button>
+                                        <button className="btn btn-danger">Delete</button></td>
                                 </tr>
+
                             )
                         })
                     }
