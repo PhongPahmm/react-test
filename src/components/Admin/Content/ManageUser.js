@@ -3,10 +3,14 @@ import './ManageUser.scss'
 import TableUser from "./TableUser";
 import { useEffect, useState } from "react";
 import { getAllUsers } from "../../../services/ApiServices";
+import ModalUpdateUser from "./ModalUpdateUser";
 
 const ManageUser = (props) => {
     const [showCreateUser, setShowCreateUser] = useState(false)
+    const [showUpdateUser, setShowUpdateUser] = useState(false)
+    const [dataUpdate, setDataUpdate] = useState({})
     const [listUsers, setListusers] = useState([])
+
     useEffect(() => {
         fetchListUser()
     }, [])
@@ -18,6 +22,10 @@ const ManageUser = (props) => {
             setListusers(res.DT)
         }
     }
+    const handleBtnUpdateUser = (user) => {
+        setShowUpdateUser(true)
+        setDataUpdate(user)
+    }
     return (
         <div className="manage-user-container">
             <div className="title">Manage User</div>
@@ -28,16 +36,24 @@ const ManageUser = (props) => {
                     >Add New User</button>
                 </div>
                 <div className="table-users-container">
-                    <TableUser listUsers={listUsers} />
+                    <TableUser
+                        listUsers={listUsers}
+                        handleBtnUpdateUser={handleBtnUpdateUser}
+                    />
                 </div>
                 <ModalCreateUser
                     show={showCreateUser}
                     setShow={setShowCreateUser}
                     fetchListUser={fetchListUser}
                 />
-
+                <ModalUpdateUser
+                    show={showUpdateUser}
+                    setShow={setShowUpdateUser}
+                    dataUpdate={dataUpdate}
+                />
             </div>
         </div>
     )
+
 }
 export default ManageUser;
