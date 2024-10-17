@@ -21,4 +21,7 @@ const putUpdateUser = (id, username, image, role) => {
 const getAllUsers = () => {
     return axios.get("http://localhost:8081/api/v1/participant/all")
 }
-export { postCreateUser, getAllUsers, putUpdateUser }
+const deleteUser = (userId) => {
+    return axios.delete("http://localhost:8081/api/v1/participant", { data: { id: userId } })
+}
+export { postCreateUser, getAllUsers, putUpdateUser, deleteUser }
