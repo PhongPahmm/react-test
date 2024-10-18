@@ -5,11 +5,14 @@ import { useEffect, useState } from "react";
 import { getAllUsers } from "../../../services/ApiServices";
 import ModalUpdateUser from "./ModalUpdateUser";
 import ModalDeleteUser from "./ModalDeleteUser";
+import ModalViewUser from "./ModalViewUser";
 
 const ManageUser = (props) => {
+    const [showUser, setShowUser] = useState(false)
     const [showCreateUser, setShowCreateUser] = useState(false)
     const [showUpdateUser, setShowUpdateUser] = useState(false)
     const [showDeleteUser, setShowDeleteUser] = useState(false)
+    const [dataView, setDataViewUser] = useState({})
     const [dataUpdate, setDataUpdate] = useState({})
     const [dataDelete, setDataDelete] = useState({})
     const [listUsers, setListusers] = useState([])
@@ -25,6 +28,11 @@ const ManageUser = (props) => {
             setListusers(res.DT)
         }
     }
+
+    const handleBtnViewUser = (user) => {
+        setShowUser(true)
+        setDataViewUser(user)
+    }
     const handleBtnUpdateUser = (user) => {
         setShowUpdateUser(true)
         setDataUpdate(user)
@@ -33,6 +41,7 @@ const ManageUser = (props) => {
         setShowDeleteUser(true)
         setDataDelete(user)
     }
+
     const resetDataUpdate = (user) => {
         setDataUpdate({})
     }
@@ -48,10 +57,16 @@ const ManageUser = (props) => {
                 <div className="table-users-container">
                     <TableUser
                         listUsers={listUsers}
+                        handleBtnViewUser={handleBtnViewUser}
                         handleBtnUpdateUser={handleBtnUpdateUser}
                         handleBtnDeleteUser={handleBtnDeleteUser}
                     />
                 </div>
+                <ModalViewUser
+                    show={showUser}
+                    setShow={setShowUser}
+                    dataView={dataView}
+                />
                 <ModalCreateUser
                     show={showCreateUser}
                     setShow={setShowCreateUser}
