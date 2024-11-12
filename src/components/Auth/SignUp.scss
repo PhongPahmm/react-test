@@ -7,7 +7,7 @@
         height: 45px;
         padding-right: 50px;
 
-        .btn-signup {
+        .btn-login {
             margin-left: 10px;
             border: none;
             color: white;
@@ -40,6 +40,16 @@
 
         .back {
             cursor: pointer;
+        }
+
+        .password-container {
+            position: relative;
+
+            .show-hide-pass {
+                position: absolute;
+                right: 10px;
+                bottom: 10px;
+            }
         }
     }
 
