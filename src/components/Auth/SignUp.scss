@@ -1,0 +1,56 @@
+.login-container {
+    .header {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        border: 1px solid black;
+        height: 45px;
+        padding-right: 50px;
+
+        .btn-login {
+            margin-left: 10px;
+            border: none;
+            color: white;
+            background-color: black;
+            border-radius: 5px;
+        }
+    }
+
+    .title {
+        font-size: 25px;
+        text-align: center;
+    }
+
+    .welcome {
+        font-size: 20px;
+        text-align: center;
+    }
+
+    .content-form {
+        .input {
+            margin-bottom: 10px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            border: none;
+            color: white;
+            background-color: black;
+        }
+
+        .back {
+            cursor: pointer;
+        }
+
+        .password-container {
+            position: relative;
+
+            .show-hide-pass {
+                position: absolute;
+                right: 10px;
+                bottom: 10px;
+            }
+        }
+    }
+
+}

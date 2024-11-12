@@ -3,7 +3,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { toast } from 'react-toastify';
-import { postCreateUser } from '../../../services/ApiServices';
+import { putUpdateUser } from '../../../services/ApiServices';
 import _ from 'lodash'
 const ModalUpdateUser = (props) => {
     const { show, setShow, dataUpdate } = props;
@@ -15,6 +15,7 @@ const ModalUpdateUser = (props) => {
         setPassword("")
         setImage("")
         setPreviewImage("")
+        props.resetDataUpdate()
     };
 
     const [email, setEmail] = useState("")
@@ -60,13 +61,9 @@ const ModalUpdateUser = (props) => {
             toast.error("invalid username")
             return;
         }
-        if (!password) {
-            toast.error("invalid password")
-            return;
-        }
 
 
-        let data = await postCreateUser(email, username, password, image, role)
+        let data = await putUpdateUser(dataUpdate.id, username, image, role)
         if (data && data.EC === 0) {
             toast.success(data.EM)
             handleClose()
@@ -78,10 +75,6 @@ const ModalUpdateUser = (props) => {
 
     return (
         <>
-            {/* <Button variant="primary" onClick={handleShow}>
-                Launch demo modal
-            </Button> */}
-
             <Modal
                 show={show}
                 onHide={handleClose}
@@ -90,7 +83,7 @@ const ModalUpdateUser = (props) => {
                 className='modal-add-new-user'
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Add New User</Modal.Title>
+                    <Modal.Title>Update User</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <form className="row g-3">
