@@ -13,6 +13,7 @@ const Header = () => {
     const handleBtnLogin = () => {
         navigate('/login')
     }
+
     const handleBtnLogout = () => {
         navigate('/')
     }
@@ -35,8 +36,8 @@ const Header = () => {
                             </>
                             :
                             <NavDropdown title="Setting" id="basic-nav-dropdown">
-                                <NavDropdown.Item onClick={() => handleBtnLogout()}>Log out</NavDropdown.Item>
                                 <NavDropdown.Item>Profile</NavDropdown.Item>
+                                <NavDropdown.Item onClick={() => handleBtnLogout()}>Log out</NavDropdown.Item>
                             </NavDropdown>
                         }
                     </Nav>
