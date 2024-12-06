@@ -3,11 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import './Login.scss'
 import { postLogin } from '../../services/ApiServices';
 import { toast } from 'react-toastify';
-
+import { useDispatch } from 'react-redux';
+import { doLogin } from '../../redux/action/userAction'
+import { FaSpinner } from "react-icons/fa";
 const Login = (props) => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [isLoading, setIsLoading] = useState(false)
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const validateEmail = (email) => {
         return String(email)
             .toLowerCase()
@@ -26,9 +30,11 @@ const Login = (props) => {
             toast.error("invalid password")
             return;
         }
-
+        setIsLoading(true)
         let data = await postLogin(email, password)
         if (data && data.EC === 0) {
+            dispatch(doLogin())
+            setIsLoading(false)
             navigate('/')
             toast.success(data.EM)
         } else {
@@ -71,7 +77,11 @@ const Login = (props) => {
                     <button
                         className='btn-submit'
                         onClick={() => { handleLogin() }}
-                    >Login</button>
+                        disabled={isLoading}
+                    >
+                        {isLoading === true && < FaSpinner className='loader-icon' />}
+                        <span>Login</span>
+                    </button>
                 </div>
                 <div className='back' onClick={() => { handleBack() }}>Back to homepage</div>
             </div>
