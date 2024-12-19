@@ -1,0 +1,14 @@
+.detail-quiz-container {
+    display: flex;
+    gap: 10px;
+
+    .left-container {
+        border: 1px solid red;
+        width: 70%;
+    }
+
+    .right-container {
+        border: 1px solid green;
+        width: 30%;
+    }
+}
