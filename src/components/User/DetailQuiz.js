@@ -40,7 +40,17 @@ const DetailQuiz = (props) => {
             setDataQuiz(data)
         }
     }
-    console.log("data quiz", dataQuiz);
+
+    const handlePrev = () => {
+        if (currentQuestion - 1 >= 0) {
+            setCurrentQuestion(currentQuestion - 1)
+        }
+    }
+    const handleNext = () => {
+        if (dataQuiz && dataQuiz.length > currentQuestion + 1) {
+            setCurrentQuestion(currentQuestion + 1)
+        }
+    }
 
     return (
         <div className="detail-quiz-container">
@@ -63,8 +73,14 @@ const DetailQuiz = (props) => {
                         } />
                 </div>
                 <div className="quiz-btn">
-                    <button className="btn btn-primary">Prev</button>
-                    <button className="btn btn-secondary">Next</button>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => { handlePrev() }}
+                    >Prev</button>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={() => { handleNext() }}
+                    >Next</button>
                 </div>
 
             </div>

@@ -9,9 +9,11 @@ const Question = (props) => {
 
     return (
         <>
-            <div className='question-img'>
-                <img src={`data:image/jpeg;base64,${data.image}`} />
-            </div>
+            {data.image &&
+                <div className='question-img'>
+                    <img src={`data:image/jpeg;base64,${data.image}`} />
+                </div>
+            }
             <div className="questions">
                 Question {index + 1}: {data.questionDescription}
             </div>
@@ -21,8 +23,8 @@ const Question = (props) => {
                         return (
                             <div className="a-child">
                                 <div className="form-check">
-                                    <input class="form-check-input" type="checkbox" value="" />
-                                    <label class="form-check-label">
+                                    <input className="form-check-input" type="checkbox" value="" />
+                                    <label className="form-check-label">
                                         {val.description}
                                     </label>
                                 </div>
