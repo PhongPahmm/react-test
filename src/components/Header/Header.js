@@ -4,17 +4,20 @@ import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import { NavLink, useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { doLogout } from '../../redux/action/userAction';
 
 const Header = () => {
     const navigate = useNavigate()
+    const dispatch = useDispatch()
     const isAuthenticated = useSelector(state => state.user.isAuthenticated)
-    const account = useSelector(state => state.user.account)
 
     const handleBtnLogin = () => {
         navigate('/login')
     }
 
     const handleBtnLogout = () => {
+        dispatch(doLogout())
         navigate('/')
     }
     return (

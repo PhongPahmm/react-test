@@ -33,4 +33,13 @@ const postLogin = (email, password) => {
 const postSignUp = (email, username, password) => {
     return axios.post('http://localhost:8081/api/v1/register', { email, username, password })
 }
-export { postCreateUser, getAllUsers, putUpdateUser, deleteUser, getUserPaginate, postLogin, postSignUp }
+const getQuizByUser = () => {
+    return axios.get('http://localhost:8081/api/v1/quiz-by-participant')
+}
+const getDetailQuiz = (id) => {
+    return axios.get(`http://localhost:8081/api/v1/questions-by-quiz?quizId=${id}`)
+}
+export {
+    postCreateUser, getAllUsers, putUpdateUser, deleteUser,
+    getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz
+}

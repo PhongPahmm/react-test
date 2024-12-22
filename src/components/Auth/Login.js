@@ -33,7 +33,7 @@ const Login = (props) => {
         setIsLoading(true)
         let data = await postLogin(email, password)
         if (data && data.EC === 0) {
-            dispatch(doLogin())
+            dispatch(doLogin(data))
             setIsLoading(false)
             navigate('/')
             toast.success(data.EM)
