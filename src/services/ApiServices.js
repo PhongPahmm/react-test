@@ -39,7 +39,11 @@ const getQuizByUser = () => {
 const getDetailQuiz = (id) => {
     return axios.get(`http://localhost:8081/api/v1/questions-by-quiz?quizId=${id}`)
 }
+const postSubmitAnswer = (data) => {
+    return axios.post('http://localhost:8081/api/v1/quiz-submit', { ...data })
+}
 export {
     postCreateUser, getAllUsers, putUpdateUser, deleteUser,
-    getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz
+    getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz,
+    postSubmitAnswer
 }
