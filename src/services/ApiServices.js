@@ -50,8 +50,12 @@ const postCreateQuiz = (name, description, difficulty, quizImage) => {
     form.append('quizImage', quizImage);
     return axios.post('http://localhost:8081/api/v1/quiz', form)
 }
+const getAllQuizzesAdmin = () => {
+    return axios.get("http://localhost:8081/api/v1/quiz/all")
+}
+
 export {
     postCreateUser, getAllUsers, putUpdateUser, deleteUser,
     getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz,
-    postSubmitAnswer, postCreateQuiz
+    postSubmitAnswer, postCreateQuiz, getAllQuizzesAdmin
 }

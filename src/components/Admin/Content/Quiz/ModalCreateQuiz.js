@@ -7,7 +7,7 @@ import { postCreateQuiz } from '../../../../services/ApiServices';
 
 
 const ModalCreateQuiz = (props) => {
-    const { show, setShow } = props;
+    const { show, setShow, handleAddNewQuiz } = props;
 
     const handleClose = () => {
         setShow(false)
@@ -33,10 +33,16 @@ const ModalCreateQuiz = (props) => {
 
     const handleSubmitCreateQuiz = async () => {
         let data = await postCreateQuiz(description, name, type, image)
-        console.log('quiz', data);
 
         if (data && data.EC === 0) {
             toast.success(data.EM)
+            const newQuiz = {
+                id: data.DT.id,
+                name,
+                description,
+                difficulty: type
+            };
+            handleAddNewQuiz(newQuiz); // Thêm quiz mới vào danh sách
             handleClose()
         } else {
             toast.error(data.EM)
