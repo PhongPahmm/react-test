@@ -1,5 +1,6 @@
 const TableQuiz = (props) => {
     const { listQuiz } = props
+
     return (
         <>
             <table className="table table-bordered table-hover">
@@ -36,7 +37,6 @@ const TableQuiz = (props) => {
                                         >Delete</button>
                                     </td>
                                 </tr>
-
                             )
                         })
                     }
@@ -45,7 +45,6 @@ const TableQuiz = (props) => {
                             <td colSpan={"5"}>Not found data</td>
                         </tr>
                     }
-
                 </tbody>
             </table>
         </>

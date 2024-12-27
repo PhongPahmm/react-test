@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { FaFileCirclePlus } from "react-icons/fa6";
 import { toast } from 'react-toastify';
-import { postCreateQuiz } from '../../../../services/ApiServices';
+import _ from 'lodash'
+import { putUpdateQuiz } from '../../../../services/ApiServices';
 
-
-const ModalCreateQuiz = (props) => {
-    const { show, setShow } = props;
+const ModalUpdateQuiz = (props) => {
+    const { show, setShow, dataUpdate } = props;
 
     const handleClose = () => {
         setShow(false)
@@ -24,6 +24,19 @@ const ModalCreateQuiz = (props) => {
     const [image, setImage] = useState("")
     const [previewImage, setPreviewImage] = useState("")
 
+
+    useEffect(() => {
+        if (!_.isEmpty(dataUpdate)) {
+            setName(dataUpdate.name)
+            setDescription(dataUpdate.description)
+            setType(dataUpdate.difficulty)
+            setImage("")
+            if (dataUpdate.image) {
+                setPreviewImage(`data:image/png;base64, ${dataUpdate.image}`)
+            }
+        }
+    }, [dataUpdate])
+
     const handleUploadImage = (event) => {
         if (event.target.files && event.target.files[0]) {
             setPreviewImage(URL.createObjectURL(event.target.files[0]));
@@ -31,15 +44,16 @@ const ModalCreateQuiz = (props) => {
         }
     }
     const handleSubmitCreateQuiz = async () => {
-        let data = await postCreateQuiz(description, name, type, image)
-
+        let data = await putUpdateQuiz(dataUpdate.name, description, type, image)
         if (data && data.EC === 0) {
             toast.success(data.EM)
+            await props.fetchListQuiz()
             handleClose()
         } else {
             toast.error(data.EM)
         }
     }
+
     return (
         <>
             <Modal
@@ -50,7 +64,7 @@ const ModalCreateQuiz = (props) => {
                 className='modal-add-new-quiz'
             >
                 <Modal.Header closeButton>
-                    <Modal.Title>Add New Quiz</Modal.Title>
+                    <Modal.Title>Update Quiz</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     <form className="row g-3">
@@ -74,7 +88,7 @@ const ModalCreateQuiz = (props) => {
                             <select className="form-select" onChange={(event) => setType(event.target.value)}>
                                 <option value="EASY">EASY</option>
                                 <option value="MEDIUM">MEDIUM</option>
-                                <option value="HARD">HARD</option>
+                                <option value="ADMIN">HARD</option>
                             </select>
                         </div>
                         <div className='col-md-12'>
@@ -88,6 +102,7 @@ const ModalCreateQuiz = (props) => {
                             {
                                 previewImage ? <img src={previewImage}></img> : <span>Preview Image</span>
                             }
+
                         </div>
                     </form>
                 </Modal.Body>
@@ -103,4 +118,6 @@ const ModalCreateQuiz = (props) => {
         </>
     );
 }
-export default ModalCreateQuiz;
+
+export default ModalUpdateQuiz;
+
