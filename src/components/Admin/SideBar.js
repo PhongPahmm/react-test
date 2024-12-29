@@ -63,7 +63,9 @@ const SideBar = ({ image, collapsed, toggled, handleToggleSidebar }) => {
                             <MenuItem> User Management
                                 <Link to="/admins/manage-users"></Link>
                             </MenuItem>
-                            <MenuItem> Quizz Management</MenuItem>
+                            <MenuItem> Quizz Management
+                                <Link to="/admins/manage-quizzes"></Link>
+                            </MenuItem>
                             <MenuItem> Question Management</MenuItem>
                         </SubMenu>
                     </Menu>

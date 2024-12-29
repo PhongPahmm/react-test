@@ -39,7 +39,33 @@ const getQuizByUser = () => {
 const getDetailQuiz = (id) => {
     return axios.get(`http://localhost:8081/api/v1/questions-by-quiz?quizId=${id}`)
 }
+const postSubmitAnswer = (data) => {
+    return axios.post('http://localhost:8081/api/v1/quiz-submit', { ...data })
+}
+const postCreateQuiz = (name, description, difficulty, quizImage) => {
+    const form = new FormData();
+    form.append('name', name);
+    form.append('description', description);
+    form.append('difficulty', difficulty);
+    form.append('quizImage', quizImage);
+    return axios.post('http://localhost:8081/api/v1/quiz', form)
+}
+const putUpdateQuiz = (id, name, description, difficulty, quizImage) => {
+    const form = new FormData();
+    form.append('id', id);
+    form.append('name', name);
+    form.append('description', description);
+    form.append('difficulty', difficulty);
+    form.append('quizImage', quizImage);
+    return axios.put('http://localhost:8081/api/v1/quiz', form)
+}
+
+const getAllQuizzesAdmin = () => {
+    return axios.get("http://localhost:8081/api/v1/quiz/all")
+}
+
 export {
     postCreateUser, getAllUsers, putUpdateUser, deleteUser,
-    getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz
+    getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz,
+    postSubmitAnswer, postCreateQuiz, getAllQuizzesAdmin, putUpdateQuiz
 }

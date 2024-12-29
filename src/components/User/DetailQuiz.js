@@ -1,13 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { getDetailQuiz } from "../../services/ApiServices";
+import { getDetailQuiz, postSubmitAnswer } from "../../services/ApiServices";
 import _ from 'lodash'
 import './DetailQuiz.scss'
 import Question from "./Question";
+import ModalResult from "./ModalResult";
 
 const DetailQuiz = (props) => {
     const [dataQuiz, setDataQuiz] = useState([])
     const [currentQuestion, setCurrentQuestion] = useState(0)
+    const [isShowModalResult, setIsShowModalResult] = useState(false)
+    const [dataModalResult, setDataModaResult] = useState({})
     const params = useParams()
     const location = useLocation()
     const quizId = params.id
@@ -71,6 +74,57 @@ const DetailQuiz = (props) => {
         }
     }
 
+    const handleFinish = async () => {
+        console.log('data quiz before submit', dataQuiz);
+
+        // {
+        //     "quizId": 1,
+        //     "answers": [
+        //         { 
+        //             "questionId": 1,
+        //             "userAnswerId": [3]
+        //         },
+        //         { 
+        //             "questionId": 2,
+        //             "userAnswerId": [6]
+        //         }
+        //     ]
+        // }
+        if (dataQuiz && dataQuiz.length > 0) {
+            let payload = {
+                quizId: quizId,
+                answers: []
+            }
+            let answers = []
+            dataQuiz.forEach(question => {
+                let questionId = question.questionId
+                let userAnswerId = []
+                question.answer.forEach(ans => {
+                    if (ans.isSelected) {
+                        userAnswerId.push(ans.id)
+                    }
+                })
+                answers.push({
+                    questionId: questionId,
+                    userAnswerId: userAnswerId
+                })
+            })
+            payload.answers = answers
+
+            const res = await postSubmitAnswer(payload)
+            console.log("check res", res);
+
+            if (res && res.EC === 0) {
+                setDataModaResult({
+                    countCorrect: res.DT.countCorrect,
+                    countTotal: res.DT.countTotal,
+                    quizData: res.DT.quizData
+                })
+                setIsShowModalResult(true)
+            }
+        }
+    }
+
     return (
         <div className="detail-quiz-container">
             <div className="left-container">
@@ -102,8 +156,8 @@ const DetailQuiz = (props) => {
                         onClick={() => { handleNext() }}
                     >Next</button>
                     <button
-                        className="btn btn-secondary"
-                        onClick={() => { handleNext() }}
+                        className="btn btn-warning"
+                        onClick={() => { handleFinish() }}
                     >Finish</button>
                 </div>
 
@@ -111,6 +165,11 @@ const DetailQuiz = (props) => {
             <div className="right-container">
                 right
             </div>
+            <ModalResult
+                show={isShowModalResult}
+                setShow={setIsShowModalResult}
+                dataModalResult={dataModalResult}
+            />
         </div>
     )
 }
