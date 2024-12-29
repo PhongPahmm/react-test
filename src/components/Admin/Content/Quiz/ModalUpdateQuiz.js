@@ -44,7 +44,7 @@ const ModalUpdateQuiz = (props) => {
         }
     }
     const handleSubmitCreateQuiz = async () => {
-        let data = await putUpdateQuiz(dataUpdate.name, description, type, image)
+        let data = await putUpdateQuiz(dataUpdate.id, name, description, type, image)
         if (data && data.EC === 0) {
             toast.success(data.EM)
             await props.fetchListQuiz()

@@ -50,8 +50,9 @@ const postCreateQuiz = (name, description, difficulty, quizImage) => {
     form.append('quizImage', quizImage);
     return axios.post('http://localhost:8081/api/v1/quiz', form)
 }
-const putUpdateQuiz = (name, description, difficulty, quizImage) => {
+const putUpdateQuiz = (id, name, description, difficulty, quizImage) => {
     const form = new FormData();
+    form.append('id', id);
     form.append('name', name);
     form.append('description', description);
     form.append('difficulty', difficulty);

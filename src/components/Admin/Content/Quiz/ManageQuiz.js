@@ -25,6 +25,8 @@ const ManageQuiz = (props) => {
     }
 
     const handleBtnUpdateQuiz = (quiz) => {
+        console.log('quiz', quiz);
+
         setShowUpdateQuiz(true)
         setDataUpdate(quiz)
     }
