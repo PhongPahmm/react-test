@@ -7,10 +7,9 @@ import { getAllQuizzesAdmin } from '../../../../services/ApiServices';
 import ModalUpdateQuiz from './ModalUpdateQuiz';
 
 const ManageQuiz = (props) => {
-    const [showCreateQuiz, setShowCreateQuiz] = useState(false)
     const [listQuiz, setListQuiz] = useState([])
     const [dataUpdate, setDataUpdate] = useState({})
-
+    const [showCreateQuiz, setShowCreateQuiz] = useState(false)
     const [showUpdateQuiz, setShowUpdateQuiz] = useState(false)
     useEffect(() => {
         fetchListQuiz()
@@ -25,8 +24,6 @@ const ManageQuiz = (props) => {
     }
 
     const handleBtnUpdateQuiz = (quiz) => {
-        console.log('quiz', quiz);
-
         setShowUpdateQuiz(true)
         setDataUpdate(quiz)
     }
