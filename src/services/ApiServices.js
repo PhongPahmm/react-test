@@ -59,7 +59,9 @@ const putUpdateQuiz = (id, name, description, difficulty, quizImage) => {
     form.append('quizImage', quizImage);
     return axios.put('http://localhost:8081/api/v1/quiz', form)
 }
-
+const deleteQuiz = (quizId) => {
+    return axios.delete(`http://localhost:8081/api/v1/quiz/${quizId}`)
+}
 const getAllQuizzesAdmin = () => {
     return axios.get("http://localhost:8081/api/v1/quiz/all")
 }
@@ -67,5 +69,6 @@ const getAllQuizzesAdmin = () => {
 export {
     postCreateUser, getAllUsers, putUpdateUser, deleteUser,
     getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz,
-    postSubmitAnswer, postCreateQuiz, getAllQuizzesAdmin, putUpdateQuiz
+    postSubmitAnswer, postCreateQuiz, getAllQuizzesAdmin, putUpdateQuiz,
+    deleteQuiz
 }
