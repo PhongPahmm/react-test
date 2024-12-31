@@ -28,6 +28,7 @@
     "redux-persist": "^6.0.0",
     "redux-thunk": "2.4.1",
     "sass": "1.77.8",
+    "uuid": "^11.0.3",
     "web-vitals": "2.1.4"
   },
   "scripts": {
