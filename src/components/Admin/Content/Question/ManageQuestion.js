@@ -5,45 +5,24 @@ import { FaPlus, FaMinus, FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 import { LuImagePlus } from "react-icons/lu";
 import './ManageQuestion.scss';
 import { v4 as uuidv4 } from 'uuid';
+import _, { findIndex } from 'lodash'
 
 const ManageQuestion = (props) => {
     const [selectedQuiz, setSelectedQuiz] = useState({})
-    const [question, setQuestion] = useState(
+    const [questions, setQuestions] = useState(
         [
             {
                 id: uuidv4(),
-                description: 'Question 1',
+                description: '',
                 image: '',
                 answers: [
                     {
                         id: uuidv4(),
-                        description: 'Answer 1',
-                        isCorrect: false
-                    },
-                    {
-                        id: uuidv4(),
-                        description: 'Answer 2',
+                        description: '',
                         isCorrect: false
                     }
                 ]
-            },
-            {
-                id: uuidv4(),
-                description: 'Question 2',
-                image: '',
-                answers: [
-                    {
-                        id: uuidv4(),
-                        description: 'Answer 1',
-                        isCorrect: false
-                    },
-                    {
-                        id: uuidv4(),
-                        description: 'Answer 2',
-                        isCorrect: false
-                    }
-                ]
-            },
+            }
         ]
     )
     const options = [
@@ -51,6 +30,46 @@ const ManageQuestion = (props) => {
         { value: 'strawberry', label: 'Strawberry' },
         { value: 'vanilla', label: 'Vanilla' },
     ]
+
+    const handleBtnRemoveAddQuestion = (type, id) => {
+        let questionClone = _.cloneDeep(questions)
+        if (type == 'ADD') {
+            const newQuestion = {
+                id: uuidv4(),
+                description: '',
+                image: '',
+                answers: [
+                    {
+                        id: uuidv4(),
+                        description: '',
+                        isCorrect: false
+                    }
+                ]
+            }
+            setQuestions([...questionClone, newQuestion])
+        }
+        if (type == 'REMOVE') {
+            questionClone = questionClone.filter(item => item.id != id)
+            setQuestions(questionClone)
+        }
+    }
+    const handleBtnRemoveAddAnswer = (type, questionId, answerId) => {
+        let questionClone = _.cloneDeep(questions)
+        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
+        if (type == 'ADD') {
+            const newAnswer = {
+                id: uuidv4(),
+                description: '',
+                isCorrect: false
+            }
+            questionClone[indexQuestion].answers.push(newAnswer)
+            setQuestions(questionClone)
+        }
+        if (type == 'REMOVE') {
+            questionClone[indexQuestion].answers = questionClone[indexQuestion].answers.filter(item => item.id != answerId)
+            setQuestions(questionClone)
+        }
+    }
     return (
         <div className="manage-question-container">
             <div className='question-title'>
@@ -68,8 +87,8 @@ const ManageQuestion = (props) => {
                 <div className='mt-3'>
                     Add questions
                 </div>
-                {question && question.length > 0
-                    && question.map((question, index) => {
+                {questions && questions.length > 0
+                    && questions.map((question, index) => {
                         return (
                             <div key={question.id} className='question-main'>
                                 <div className='question-content'>
@@ -91,15 +110,18 @@ const ManageQuestion = (props) => {
                                         <span>0 file is uploaded</span>
                                     </div>
                                     <div className='btn-add'>
-                                        <span>
+                                        <span onClick={() => handleBtnRemoveAddQuestion('ADD', question.id)}>
                                             <FaPlus className='icon-add' />
                                         </span>
-                                        <span>
-                                            <FaMinus className='icon-remove' />
-                                        </span>
+                                        {questions.length > 1 &&
+                                            <span onClick={() => handleBtnRemoveAddQuestion('REMOVE', question.id)}>
+                                                <FaMinus className='icon-remove' />
+                                            </span>
+                                        }
                                     </div>
                                 </div>
-                                {question.answers && question.answers.length > 0
+                                {
+                                    question.answers && question.answers.length > 0
                                     && question.answers.map((answer, index) => {
                                         return (
                                             <div key={answer.id} className='answer-content'>
@@ -118,23 +140,26 @@ const ManageQuestion = (props) => {
                                                     </Form.Floating>
                                                 </div>
                                                 <div className='btn-group'>
-                                                    <span>
+                                                    <span onClick={() => handleBtnRemoveAddAnswer('ADD', question.id)}>
                                                         <FaPlusCircle className='icon-add' />
                                                     </span>
-                                                    <span>
-                                                        <FaMinusCircle className='icon-remove' />
-                                                    </span>
+                                                    {question.answers.length > 1 &&
+                                                        <span onClick={() => handleBtnRemoveAddAnswer('REMOVE', question.id, answer.id)}>
+                                                            <FaMinusCircle className='icon-remove' />
+                                                        </span>
+                                                    }
                                                 </div>
                                             </div>
                                         )
-                                    })}
+                                    })
+                                }
 
                             </div>
                         )
                     })
                 }
             </div>
-        </div>
+        </div >
     )
 }
 export default ManageQuestion;
