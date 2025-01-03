@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Select from 'react-select';
 import Form from 'react-bootstrap/Form';
 import { FaPlus, FaMinus, FaMinusCircle, FaPlusCircle } from "react-icons/fa";
 import { LuImagePlus } from "react-icons/lu";
 import './ManageQuestion.scss';
 import { v4 as uuidv4 } from 'uuid';
-import _, { findIndex } from 'lodash'
+import _ from 'lodash'
+import Modal from 'react-bootstrap/Modal';
 
 const ManageQuestion = (props) => {
     const [selectedQuiz, setSelectedQuiz] = useState({})
+    const [previewImage, setPreviewImage] = useState('')
     const [questions, setQuestions] = useState(
         [
             {
@@ -85,7 +87,7 @@ const ManageQuestion = (props) => {
         let indexQuestion = questionClone.findIndex(item => item.id == questionId)
         if (indexQuestion > -1 && event.target
             && event.target.files && event.target.files[0])
-            questionClone[indexQuestion].imageFile = event.target.files[0]
+            questionClone[indexQuestion].imageFile = URL.createObjectURL(event.target.files[0])
         questionClone[indexQuestion].imageName = event.target.files[0].name
         setQuestions(questionClone)
     }
@@ -108,9 +110,28 @@ const ManageQuestion = (props) => {
             setQuestions(questionClone)
         }
     }
+    const handlePreviewImage = (imageSrc) => {
+        setPreviewImage(imageSrc);
+    };
+
+    const closePreview = () => {
+        setPreviewImage('');
+    };
+
+    useEffect(() => {
+        return () => {
+            questions.forEach((question) => {
+                if (question.imageFile) {
+                    URL.revokeObjectURL(question.imageFile);
+                }
+            })
+        }
+    }, [questions])
+
     const handleSubmitQuestion = () => {
         alert('me')
     }
+
     return (
         <div className="manage-question-container">
             <div className='question-title'>
@@ -155,7 +176,11 @@ const ManageQuestion = (props) => {
                                             onChange={(event) => handleUploadFile(question.id, event)}
                                             type={'file'}
                                             hidden />
-                                        <span>{question.imageFile ? question.imageName : '0 file is uploaded'}</span>
+                                        <span
+                                            onClick={() => handlePreviewImage(question.imageFile)}
+                                            className="image-preview-link"
+                                        >
+                                            {question.imageFile ? question.imageName : '0 file is uploaded'}</span>
                                     </div>
                                     <div className='btn-add'>
                                         <span onClick={() => handleBtnRemoveAddQuestion('ADD', question.id)}>
@@ -213,6 +238,19 @@ const ManageQuestion = (props) => {
                             className='btn btn-warning'>Save</button>
                     </div>
                 }
+                <Modal
+                    show={!!previewImage}
+                    onHide={closePreview}
+                    centered
+                    size='xl'
+                >
+                    <Modal.Header closeButton>
+                        <Modal.Title>Image Preview</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>
+                        {previewImage && <img src={previewImage} alt="Preview" style={{ width: '100%' }} />}
+                    </Modal.Body>
+                </Modal>
             </div>
         </div >
     )
