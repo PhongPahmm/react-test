@@ -14,7 +14,8 @@ const ManageQuestion = (props) => {
             {
                 id: uuidv4(),
                 description: '',
-                image: '',
+                imageFile: '',
+                imageName: '',
                 answers: [
                     {
                         id: uuidv4(),
@@ -37,7 +38,8 @@ const ManageQuestion = (props) => {
             const newQuestion = {
                 id: uuidv4(),
                 description: '',
-                image: '',
+                imageFile: '',
+                imageName: '',
                 answers: [
                     {
                         id: uuidv4(),
@@ -70,6 +72,45 @@ const ManageQuestion = (props) => {
             setQuestions(questionClone)
         }
     }
+    const handleOnChange = (type, questionId, value) => {
+        let questionClone = _.cloneDeep(questions)
+        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
+        if (type == 'QUESTION') {
+            questionClone[indexQuestion].description = value
+            setQuestions(questionClone)
+        }
+    }
+    const handleUploadFile = (questionId, event) => {
+        let questionClone = _.cloneDeep(questions)
+        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
+        if (indexQuestion > -1 && event.target
+            && event.target.files && event.target.files[0])
+            questionClone[indexQuestion].imageFile = event.target.files[0]
+        questionClone[indexQuestion].imageName = event.target.files[0].name
+        setQuestions(questionClone)
+    }
+    const handleAnswerQuestion = (type, questionId, answerId, value) => {
+        let questionClone = _.cloneDeep(questions)
+        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
+        if (indexQuestion > -1) {
+            questionClone[indexQuestion].answers =
+                questionClone[indexQuestion].answers.map(answer => {
+                    if (answer.id == answerId) {
+                        if (type == 'CHECKBOX') {
+                            answer.isCorrect = value
+                        }
+                        if (type == 'INPUT') {
+                            answer.description = value
+                        }
+                    }
+                    return answer
+                })
+            setQuestions(questionClone)
+        }
+    }
+    const handleSubmitQuestion = () => {
+        alert('me')
+    }
     return (
         <div className="manage-question-container">
             <div className='question-title'>
@@ -98,16 +139,23 @@ const ManageQuestion = (props) => {
                                                 type="text"
                                                 placeholder="Description"
                                                 value={question.description}
+                                                onChange={(event) => handleOnChange('QUESTION', question.id, event.target.value)}
                                             />
                                             <label>Question {index + 1}</label>
                                         </Form.Floating>
                                     </div>
                                     <div className='group-upload'>
-                                        <label className='label-upload'>
+                                        <label
+                                            htmlFor={`${question.id}`}
+                                            className='label-upload'>
                                             <LuImagePlus />
                                         </label>
-                                        <input type='file' hidden />
-                                        <span>0 file is uploaded</span>
+                                        <input
+                                            id={`${question.id}`}
+                                            onChange={(event) => handleUploadFile(question.id, event)}
+                                            type={'file'}
+                                            hidden />
+                                        <span>{question.imageFile ? question.imageName : '0 file is uploaded'}</span>
                                     </div>
                                     <div className='btn-add'>
                                         <span onClick={() => handleBtnRemoveAddQuestion('ADD', question.id)}>
@@ -128,13 +176,14 @@ const ManageQuestion = (props) => {
                                                 <input
                                                     className='form-check-input isCorrect'
                                                     type='checkbox'
+                                                    onChange={(event) => handleAnswerQuestion('CHECKBOX', question.id, answer.id, event.target.checked)}
                                                 />
                                                 <div className='answer-name'>
                                                     <Form.Floating>
                                                         <Form.Control
                                                             type="text"
                                                             placeholder="Answer"
-                                                            value={answer.description}
+                                                            onChange={(event) => handleAnswerQuestion('INPUT', question.id, answer.id, event.target.value)}
                                                         />
                                                         <label>Answer {index + 1}</label>
                                                     </Form.Floating>
@@ -153,10 +202,16 @@ const ManageQuestion = (props) => {
                                         )
                                     })
                                 }
-
                             </div>
                         )
                     })
+                }
+                {questions && questions.length > 0 &&
+                    <div>
+                        <button
+                            onClick={() => handleSubmitQuestion()}
+                            className='btn btn-warning'>Save</button>
+                    </div>
                 }
             </div>
         </div >
