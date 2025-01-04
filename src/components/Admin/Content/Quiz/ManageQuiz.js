@@ -14,6 +14,7 @@ const ManageQuiz = (props) => {
     const [showCreateQuiz, setShowCreateQuiz] = useState(false)
     const [showUpdateQuiz, setShowUpdateQuiz] = useState(false)
     const [showDeleteQuiz, setShowDeleteQuiz] = useState(false)
+
     useEffect(() => {
         fetchListQuiz()
     }, [])

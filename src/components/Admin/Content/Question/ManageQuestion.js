@@ -7,9 +7,11 @@ import './ManageQuestion.scss';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash'
 import Modal from 'react-bootstrap/Modal';
+import { getAllQuizzesAdmin } from '../../../../services/ApiServices';
 
 const ManageQuestion = (props) => {
     const [selectedQuiz, setSelectedQuiz] = useState({})
+    const [listQuiz, setListQuiz] = useState([])
     const [previewImage, setPreviewImage] = useState('')
     const [questions, setQuestions] = useState(
         [
@@ -28,11 +30,6 @@ const ManageQuestion = (props) => {
             }
         ]
     )
-    const options = [
-        { value: 'chocolate', label: 'Chocolate' },
-        { value: 'strawberry', label: 'Strawberry' },
-        { value: 'vanilla', label: 'Vanilla' },
-    ]
 
     const handleBtnRemoveAddQuestion = (type, id) => {
         let questionClone = _.cloneDeep(questions)
@@ -128,6 +125,23 @@ const ManageQuestion = (props) => {
         }
     }, [questions])
 
+    useEffect(() => {
+        fetchListQuiz()
+    }, [])
+
+    const fetchListQuiz = async () => {
+        const res = await getAllQuizzesAdmin()
+        if (res && res.EC === 0) {
+            const newQuiz = res.DT.map(item => {
+                return {
+                    value: item.id,
+                    label: `${item.id} - ${item.description}`
+                }
+            })
+            setListQuiz(newQuiz)
+        }
+    }
+
     const handleSubmitQuestion = () => {
         alert('me')
     }
@@ -139,11 +153,13 @@ const ManageQuestion = (props) => {
             </div>
             <div className='add-new-question'>
                 <div className='col-6 form-group'>
-                    <label>Select quiz</label>
+                    <label className='mb-2'>Select quiz</label>
                     <Select
+                        menuPortalTarget={document.body}
+                        styles={{ menuPortal: base => ({ ...base, zIndex: 9999 }) }}
                         defaultValue={selectedQuiz}
                         onChange={setSelectedQuiz}
-                        options={options}
+                        options={listQuiz}
                     />
                 </div>
                 <div className='mt-3'>
