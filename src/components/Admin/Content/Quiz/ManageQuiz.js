@@ -5,32 +5,34 @@ import TableQuiz from './TableQuiz';
 import { useEffect } from 'react';
 import { getAllQuizzesAdmin } from '../../../../services/ApiServices';
 import ModalUpdateQuiz from './ModalUpdateQuiz';
+import ModalDeleteQuiz from './ModalDeleteQuiz';
 
 const ManageQuiz = (props) => {
-    const [showCreateQuiz, setShowCreateQuiz] = useState(false)
     const [listQuiz, setListQuiz] = useState([])
     const [dataUpdate, setDataUpdate] = useState({})
-
+    const [dataDelete, setDataDelete] = useState({})
+    const [showCreateQuiz, setShowCreateQuiz] = useState(false)
     const [showUpdateQuiz, setShowUpdateQuiz] = useState(false)
+    const [showDeleteQuiz, setShowDeleteQuiz] = useState(false)
+
     useEffect(() => {
         fetchListQuiz()
     }, [])
 
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
-
         if (res && res.EC === 0) {
             setListQuiz(res.DT)
         }
     }
-
     const handleBtnUpdateQuiz = (quiz) => {
-        console.log('quiz', quiz);
-
         setShowUpdateQuiz(true)
         setDataUpdate(quiz)
     }
-
+    const handleBtnDeleteQuiz = (quiz) => {
+        setShowDeleteQuiz(true)
+        setDataDelete(quiz)
+    }
     return (
         <div className="manage-quiz-container">
             <div className="title">Manage Quiz</div>
@@ -44,6 +46,7 @@ const ManageQuiz = (props) => {
                     <TableQuiz
                         listQuiz={listQuiz}
                         handleBtnUpdateQuiz={handleBtnUpdateQuiz}
+                        handleBtnDeleteQuiz={handleBtnDeleteQuiz}
                     />
                 </div>
                 <ModalCreateQuiz
@@ -55,6 +58,12 @@ const ManageQuiz = (props) => {
                     show={showUpdateQuiz}
                     setShow={setShowUpdateQuiz}
                     dataUpdate={dataUpdate}
+                    fetchListQuiz={fetchListQuiz}
+                />
+                <ModalDeleteQuiz
+                    show={showDeleteQuiz}
+                    setShow={setShowDeleteQuiz}
+                    dataDelete={dataDelete}
                     fetchListQuiz={fetchListQuiz}
                 />
             </div>

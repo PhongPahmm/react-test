@@ -35,6 +35,7 @@ const ModalCreateQuiz = (props) => {
 
         if (data && data.EC === 0) {
             toast.success(data.EM)
+            await props.fetchListQuiz()
             handleClose()
         } else {
             toast.error(data.EM)
