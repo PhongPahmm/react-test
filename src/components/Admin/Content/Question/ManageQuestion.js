@@ -7,7 +7,7 @@ import './ManageQuestion.scss';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash'
 import Modal from 'react-bootstrap/Modal';
-import { getAllQuizzesAdmin } from '../../../../services/ApiServices';
+import { getAllQuizzesAdmin, postCreateAnswerForQuestion, postCreateQuestionForQuiz } from '../../../../services/ApiServices';
 
 const ManageQuestion = (props) => {
     const [selectedQuiz, setSelectedQuiz] = useState({})
@@ -33,7 +33,7 @@ const ManageQuestion = (props) => {
 
     const handleBtnRemoveAddQuestion = (type, id) => {
         let questionClone = _.cloneDeep(questions)
-        if (type == 'ADD') {
+        if (type === 'ADD') {
             const newQuestion = {
                 id: uuidv4(),
                 description: '',
@@ -49,15 +49,15 @@ const ManageQuestion = (props) => {
             }
             setQuestions([...questionClone, newQuestion])
         }
-        if (type == 'REMOVE') {
-            questionClone = questionClone.filter(item => item.id != id)
+        if (type === 'REMOVE') {
+            questionClone = questionClone.filter(item => item.id !== id)
             setQuestions(questionClone)
         }
     }
     const handleBtnRemoveAddAnswer = (type, questionId, answerId) => {
         let questionClone = _.cloneDeep(questions)
-        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
-        if (type == 'ADD') {
+        let indexQuestion = questionClone.findIndex(item => item.id === questionId)
+        if (type === 'ADD') {
             const newAnswer = {
                 id: uuidv4(),
                 description: '',
@@ -66,22 +66,22 @@ const ManageQuestion = (props) => {
             questionClone[indexQuestion].answers.push(newAnswer)
             setQuestions(questionClone)
         }
-        if (type == 'REMOVE') {
-            questionClone[indexQuestion].answers = questionClone[indexQuestion].answers.filter(item => item.id != answerId)
+        if (type === 'REMOVE') {
+            questionClone[indexQuestion].answers = questionClone[indexQuestion].answers.filter(item => item.id !== answerId)
             setQuestions(questionClone)
         }
     }
     const handleOnChange = (type, questionId, value) => {
         let questionClone = _.cloneDeep(questions)
-        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
-        if (type == 'QUESTION') {
+        let indexQuestion = questionClone.findIndex(item => item.id === questionId)
+        if (type === 'QUESTION') {
             questionClone[indexQuestion].description = value
             setQuestions(questionClone)
         }
     }
     const handleUploadFile = (questionId, event) => {
         let questionClone = _.cloneDeep(questions)
-        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
+        let indexQuestion = questionClone.findIndex(item => item.id === questionId)
         if (indexQuestion > -1 && event.target
             && event.target.files && event.target.files[0])
             questionClone[indexQuestion].imageFile = URL.createObjectURL(event.target.files[0])
@@ -90,15 +90,15 @@ const ManageQuestion = (props) => {
     }
     const handleAnswerQuestion = (type, questionId, answerId, value) => {
         let questionClone = _.cloneDeep(questions)
-        let indexQuestion = questionClone.findIndex(item => item.id == questionId)
+        let indexQuestion = questionClone.findIndex(item => item.id === questionId)
         if (indexQuestion > -1) {
             questionClone[indexQuestion].answers =
                 questionClone[indexQuestion].answers.map(answer => {
-                    if (answer.id == answerId) {
-                        if (type == 'CHECKBOX') {
+                    if (answer.id === answerId) {
+                        if (type === 'CHECKBOX') {
                             answer.isCorrect = value
                         }
-                        if (type == 'INPUT') {
+                        if (type === 'INPUT') {
                             answer.description = value
                         }
                     }
@@ -142,8 +142,16 @@ const ManageQuestion = (props) => {
         }
     }
 
-    const handleSubmitQuestion = () => {
-        alert('me')
+    const handleSubmitQuestion = async () => {
+        await Promise.all(questions.map(async (question) => {
+            const q = await postCreateQuestionForQuiz(+selectedQuiz.value,
+                question.description, question.imageFile)
+            await Promise.all(question.answers.map(async (answer) => {
+                await postCreateAnswerForQuestion(answer.description,
+                    answer.isCorrect, q.DT.id
+                )
+            }))
+        }))
     }
 
     return (
