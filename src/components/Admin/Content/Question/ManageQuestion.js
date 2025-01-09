@@ -8,6 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash'
 import Modal from 'react-bootstrap/Modal';
 import { getAllQuizzesAdmin, postCreateAnswerForQuestion, postCreateQuestionForQuiz } from '../../../../services/ApiServices';
+import { toast } from 'react-toastify';
 
 const ManageQuestion = (props) => {
     const [selectedQuiz, setSelectedQuiz] = useState({})
@@ -143,15 +144,50 @@ const ManageQuestion = (props) => {
     }
 
     const handleSubmitQuestion = async () => {
-        await Promise.all(questions.map(async (question) => {
-            const q = await postCreateQuestionForQuiz(+selectedQuiz.value,
-                question.description, question.imageFile)
-            await Promise.all(question.answers.map(async (answer) => {
-                await postCreateAnswerForQuestion(answer.description,
-                    answer.isCorrect, q.DT.id
+        if (_.isEmpty(selectedQuiz)) {
+            toast.error('Pls assign a quiz!!!')
+            return;
+        }
+        let hasError = false
+        let correctAnswerCount = 0
+        for (let i = 0; i < questions.length; i++) {
+            const question = questions[i]
+            if (!question.description.trim()) {
+                toast.error(`Question ${i + 1} description is empty!`);
+                hasError = true
+            }
+            for (let j = 0; j < question.answers.length; j++) {
+                const answer = question.answers[j]
+                if (!answer.description.trim()) {
+                    toast.error(`Answer ${j + 1} of Question ${i + 1} is empty!`);
+                    hasError = true
+                }
+                if (answer.isCorrect) {
+                    correctAnswerCount++
+                }
+            }
+            if (correctAnswerCount === 0) {
+                toast.error(`Question ${i + 1} must have at least one correct answer!`);
+                hasError = true
+            }
+        }
+        if (hasError) {
+            return
+        }
+        for (const question of questions) {
+            const q = await postCreateQuestionForQuiz(
+                +selectedQuiz.value,
+                question.description,
+                question.imageFile
+            )
+            for (const answer of question.answers) {
+                await postCreateAnswerForQuestion(
+                    answer.description,
+                    answer.isCorrect,
+                    q.DT.id
                 )
-            }))
-        }))
+            }
+        }
     }
 
     return (
