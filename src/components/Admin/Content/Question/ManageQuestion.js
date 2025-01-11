@@ -7,7 +7,7 @@ import './ManageQuestion.scss';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash'
 import Modal from 'react-bootstrap/Modal';
-import { getAllQuizzesAdmin, postCreateAnswerForQuestion, postCreateQuestionForQuiz } from '../../../../services/ApiServices';
+import { getAllQuizzesAdmin, getQuizWithQA, postCreateAnswerForQuestion, postCreateQuestionForQuiz } from '../../../../services/ApiServices';
 import { toast } from 'react-toastify';
 
 const ManageQuestion = (props) => {
@@ -130,13 +130,27 @@ const ManageQuestion = (props) => {
         fetchListQuiz()
     }, [])
 
+    useEffect(() => {
+        if (selectedQuiz && selectedQuiz.value) {
+            fetchQuizQA()
+        }
+    }, [selectedQuiz])
+
+    const fetchQuizQA = async () => {
+        const res = await getQuizWithQA(selectedQuiz.value)
+        console.log('check res', res);
+
+        if (res && res.EC === 0) {
+            setQuestions(res.DT.qa)
+        }
+    }
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
         if (res && res.EC === 0) {
             const newQuiz = res.DT.map(item => {
                 return {
                     value: item.id,
-                    label: `${item.id} - ${item.description}`
+                    label: `${item.id} - ${item.name}`
                 }
             })
             setListQuiz(newQuiz)
@@ -261,6 +275,7 @@ const ManageQuestion = (props) => {
                                                 <input
                                                     className='form-check-input isCorrect'
                                                     type='checkbox'
+                                                    checked={answer.isCorrect}
                                                     onChange={(event) => handleAnswerQuestion('CHECKBOX', question.id, answer.id, event.target.checked)}
                                                 />
                                                 <div className='answer-name'>
@@ -268,6 +283,7 @@ const ManageQuestion = (props) => {
                                                         <Form.Control
                                                             type="text"
                                                             placeholder="Answer"
+                                                            value={answer.description}
                                                             onChange={(event) => handleAnswerQuestion('INPUT', question.id, answer.id, event.target.value)}
                                                         />
                                                         <label>Answer {index + 1}</label>

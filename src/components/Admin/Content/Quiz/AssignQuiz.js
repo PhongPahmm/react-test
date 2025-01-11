@@ -1,11 +1,13 @@
 import Select from 'react-select';
 import { useState, useEffect } from 'react';
-import { getAllQuizzesAdmin } from '../../../../services/ApiServices';
+import { getAllQuizzesAdmin, postAssignQuiz } from '../../../../services/ApiServices';
 import { getAllUsers } from '../../../../services/ApiServices';
+import { toast } from 'react-toastify';
 import './AssignQuiz.scss'
 
 const AssignQuiz = (props) => {
     const [selectedQuiz, setSelectedQuiz] = useState({})
+    const [selectedUser, setSelectedUser] = useState({})
     const [listQuiz, setListQuiz] = useState([])
     const [listUsers, setListusers] = useState([])
 
@@ -16,16 +18,14 @@ const AssignQuiz = (props) => {
 
     const fetchListUser = async () => {
         let res = await getAllUsers()
-        console.log("check res", res);
-
         if (res && res.EC === 0) {
-            const newUsers = res.DT.map(item => {
+            const users = res.DT.map(item => {
                 return {
                     value: item.id,
-                    label: `${item.id} - ${item.username}`
+                    label: `${item.id} - ${item.username} -${item.email}`
                 }
             })
-            setListusers(newUsers)
+            setListusers(users)
         }
     }
     const fetchListQuiz = async () => {
@@ -34,13 +34,24 @@ const AssignQuiz = (props) => {
             const newQuiz = res.DT.map(item => {
                 return {
                     value: item.id,
-                    label: `${item.id} - ${item.description}`
+                    label: `${item.id} - ${item.name}`
                 }
             })
             setListQuiz(newQuiz)
         }
     }
 
+    const handleAssign = async () => {
+        const res = await postAssignQuiz(selectedQuiz.value, selectedUser.value)
+        if (res && res.EC === 0) {
+            toast.success(res.EM)
+            setSelectedQuiz({})
+            setSelectedUser({})
+        } else {
+            toast.error(res.EM)
+        }
+
+    }
     return (
         <div className="asign-quiz-container">
             <div className='mb-4 assign-quiz-user'>
@@ -62,10 +73,15 @@ const AssignQuiz = (props) => {
                         menuPortal: base => ({ ...base, zIndex: 9999 }),
                         control: base => ({ ...base, width: '300px' })
                     }}
-                    defaultValue={selectedQuiz}
-                    onChange={setSelectedQuiz}
+                    defaultValue={selectedUser}
+                    onChange={setSelectedUser}
                     options={listUsers}
                 />
+                <div>
+                    <button
+                        onClick={() => handleAssign()}
+                        className='btn btn-warning'>Assign</button>
+                </div>
             </div>
         </div>
     )
