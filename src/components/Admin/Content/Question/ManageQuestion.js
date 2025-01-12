@@ -7,7 +7,7 @@ import './ManageQuestion.scss';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash'
 import Modal from 'react-bootstrap/Modal';
-import { getAllQuizzesAdmin, getQuizWithQA, postCreateAnswerForQuestion, postCreateQuestionForQuiz } from '../../../../services/ApiServices';
+import { getAllQuizzesAdmin, getQuizWithQA, postCreateAnswerForQuestion, postCreateQuestionForQuiz, postUpSertQuiz } from '../../../../services/ApiServices';
 import { toast } from 'react-toastify';
 
 const ManageQuestion = (props) => {
@@ -84,10 +84,14 @@ const ManageQuestion = (props) => {
         let questionClone = _.cloneDeep(questions)
         let indexQuestion = questionClone.findIndex(item => item.id === questionId)
         if (indexQuestion > -1 && event.target
-            && event.target.files && event.target.files[0])
-            questionClone[indexQuestion].imageFile = URL.createObjectURL(event.target.files[0])
-        questionClone[indexQuestion].imageName = event.target.files[0].name
-        setQuestions(questionClone)
+            && event.target.files && event.target.files[0]) {
+            const file = event.target.files[0]
+            if (file) {
+                questionClone[indexQuestion].imageFile = URL.createObjectURL(file)
+                questionClone[indexQuestion].imageName = file.name
+                setQuestions(questionClone)
+            }
+        }
     }
     const handleAnswerQuestion = (type, questionId, answerId, value) => {
         let questionClone = _.cloneDeep(questions)
@@ -138,14 +142,12 @@ const ManageQuestion = (props) => {
 
     const fetchQuizQA = async () => {
         const res = await getQuizWithQA(selectedQuiz.value)
-        console.log('check res', res);
-
         if (res && res.EC === 0) {
             let newQA = []
             for (let i = 0; i < res.DT.qa.length; i++) {
                 let q = res.DT.qa[i]
                 if (q.imageFile) {
-                    const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`);
+                    const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`, 'image/png');
                     q.imageFile = URL.createObjectURL(file);
                     q.imageName = `Question-${q.id}.png`;
                 }
@@ -167,6 +169,23 @@ const ManageQuestion = (props) => {
         return new File([u8arr], filename, { type: mime });
     }
 
+    function toBase64() {
+        var xhr = new XMLHttpRequest;
+        xhr.responseType = 'blob';
+
+        xhr.onload = function () {
+            var recoveredBlob = xhr.response;
+
+            var reader = new FileReader;
+
+            reader.onload = function () {
+                var blobAsDataUrl = reader.result;
+                window.location = blobAsDataUrl;
+            };
+
+            reader.readAsDataURL(recoveredBlob);
+        };
+    }
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
         if (res && res.EC === 0) {
@@ -211,18 +230,47 @@ const ManageQuestion = (props) => {
         if (hasError) {
             return
         }
-        for (const question of questions) {
-            const q = await postCreateQuestionForQuiz(
-                +selectedQuiz.value,
-                question.description,
-                question.imageFile
-            )
-            for (const answer of question.answers) {
-                await postCreateAnswerForQuestion(
-                    answer.description,
-                    answer.isCorrect,
-                    q.DT.id
-                )
+        console.log('check ', questions);
+
+        let questionClone = _.cloneDeep(questions)
+
+        for (let i = 0; i < questionClone.length; i++) {
+            if (questionClone[i].imageFile) {
+                questionClone[i].imageFile = toBase64(questionClone[i].imageFile)
+            }
+        }
+        console.log('check clone', questionClone);
+
+        if (questions.length > 0) {
+            const payload = {
+                quizId: +selectedQuiz.value,
+                questions: questionClone,
+            };
+
+            const res = await postUpSertQuiz(payload);
+            if (res && res.EC === 0) {
+                toast.success(res.EM);
+            } else {
+                toast.error(res.EM);
+            }
+
+        } else {
+            // If no questions exist, create new questions for the quiz
+            for (const question of questions) {
+                const q = await postCreateQuestionForQuiz(
+                    +selectedQuiz.value,
+                    question.description,
+                    question.imageFile
+                );
+
+                // Create answers for each question
+                for (const answer of question.answers) {
+                    await postCreateAnswerForQuestion(
+                        answer.description,
+                        answer.isCorrect,
+                        q.DT.id
+                    );
+                }
             }
         }
     }

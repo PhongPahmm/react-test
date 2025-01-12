@@ -85,10 +85,13 @@ const postAssignQuiz = (quizId, userId) => {
 const getQuizWithQA = (quizId) => {
     return axios.get(`http://localhost:8081/api/v1/quiz-with-qa/${quizId}`)
 }
+const postUpSertQuiz = (data) => {
+    return axios.post('http://localhost:8081/api/v1/quiz-upsert-qa', { ...data })
+}
 export {
     postCreateUser, getAllUsers, putUpdateUser, deleteUser,
     getUserPaginate, postLogin, postSignUp, getQuizByUser, getDetailQuiz,
     postSubmitAnswer, postCreateQuiz, getAllQuizzesAdmin, putUpdateQuiz,
     deleteQuiz, postCreateQuestionForQuiz, postCreateAnswerForQuestion, postAssignQuiz,
-    getQuizWithQA
+    getQuizWithQA, postUpSertQuiz
 }
