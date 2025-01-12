@@ -141,9 +141,32 @@ const ManageQuestion = (props) => {
         console.log('check res', res);
 
         if (res && res.EC === 0) {
-            setQuestions(res.DT.qa)
+            let newQA = []
+            for (let i = 0; i < res.DT.qa.length; i++) {
+                let q = res.DT.qa[i]
+                if (q.imageFile) {
+                    const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`);
+                    q.imageFile = URL.createObjectURL(file);
+                    q.imageName = `Question-${q.id}.png`;
+                }
+                newQA.push(q)
+            }
+            setQuestions(newQA)
         }
     }
+    // return a promise that resolves with a File instance
+    function dataURLtoFile(dataurl, filename) {
+        var arr = dataurl.split(','),
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[arr.length - 1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    }
+
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
         if (res && res.EC === 0) {
