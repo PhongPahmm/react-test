@@ -7,7 +7,8 @@ import './ManageQuestion.scss';
 import { v4 as uuidv4 } from 'uuid';
 import _ from 'lodash'
 import Modal from 'react-bootstrap/Modal';
-import { getAllQuizzesAdmin, postCreateAnswerForQuestion, postCreateQuestionForQuiz } from '../../../../services/ApiServices';
+import { getAllQuizzesAdmin, getQuizWithQA, postCreateAnswerForQuestion, postCreateQuestionForQuiz, postUpSertQuiz } from '../../../../services/ApiServices';
+import { toast } from 'react-toastify';
 
 const ManageQuestion = (props) => {
     const [selectedQuiz, setSelectedQuiz] = useState({})
@@ -83,10 +84,14 @@ const ManageQuestion = (props) => {
         let questionClone = _.cloneDeep(questions)
         let indexQuestion = questionClone.findIndex(item => item.id === questionId)
         if (indexQuestion > -1 && event.target
-            && event.target.files && event.target.files[0])
-            questionClone[indexQuestion].imageFile = URL.createObjectURL(event.target.files[0])
-        questionClone[indexQuestion].imageName = event.target.files[0].name
-        setQuestions(questionClone)
+            && event.target.files && event.target.files[0]) {
+            const file = event.target.files[0]
+            if (file) {
+                questionClone[indexQuestion].imageFile = URL.createObjectURL(file)
+                questionClone[indexQuestion].imageName = file.name
+                setQuestions(questionClone)
+            }
+        }
     }
     const handleAnswerQuestion = (type, questionId, answerId, value) => {
         let questionClone = _.cloneDeep(questions)
@@ -129,13 +134,65 @@ const ManageQuestion = (props) => {
         fetchListQuiz()
     }, [])
 
+    useEffect(() => {
+        if (selectedQuiz && selectedQuiz.value) {
+            fetchQuizQA()
+        }
+    }, [selectedQuiz])
+
+    const fetchQuizQA = async () => {
+        const res = await getQuizWithQA(selectedQuiz.value)
+        if (res && res.EC === 0) {
+            let newQA = []
+            for (let i = 0; i < res.DT.qa.length; i++) {
+                let q = res.DT.qa[i]
+                if (q.imageFile) {
+                    const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`, 'image/png');
+                    q.imageFile = URL.createObjectURL(file);
+                    q.imageName = `Question-${q.id}.png`;
+                }
+                newQA.push(q)
+            }
+            setQuestions(newQA)
+        }
+    }
+    // return a promise that resolves with a File instance
+    function dataURLtoFile(dataurl, filename) {
+        var arr = dataurl.split(','),
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[arr.length - 1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    }
+
+    function toBase64() {
+        var xhr = new XMLHttpRequest;
+        xhr.responseType = 'blob';
+
+        xhr.onload = function () {
+            var recoveredBlob = xhr.response;
+
+            var reader = new FileReader;
+
+            reader.onload = function () {
+                var blobAsDataUrl = reader.result;
+                window.location = blobAsDataUrl;
+            };
+
+            reader.readAsDataURL(recoveredBlob);
+        };
+    }
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
         if (res && res.EC === 0) {
             const newQuiz = res.DT.map(item => {
                 return {
                     value: item.id,
-                    label: `${item.id} - ${item.description}`
+                    label: `${item.id} - ${item.name}`
                 }
             })
             setListQuiz(newQuiz)
@@ -143,15 +200,79 @@ const ManageQuestion = (props) => {
     }
 
     const handleSubmitQuestion = async () => {
-        await Promise.all(questions.map(async (question) => {
-            const q = await postCreateQuestionForQuiz(+selectedQuiz.value,
-                question.description, question.imageFile)
-            await Promise.all(question.answers.map(async (answer) => {
-                await postCreateAnswerForQuestion(answer.description,
-                    answer.isCorrect, q.DT.id
-                )
-            }))
-        }))
+        if (_.isEmpty(selectedQuiz)) {
+            toast.error('Pls assign a quiz!!!')
+            return;
+        }
+        let hasError = false
+        let correctAnswerCount = 0
+        for (let i = 0; i < questions.length; i++) {
+            const question = questions[i]
+            if (!question.description.trim()) {
+                toast.error(`Question ${i + 1} description is empty!`);
+                hasError = true
+            }
+            for (let j = 0; j < question.answers.length; j++) {
+                const answer = question.answers[j]
+                if (!answer.description.trim()) {
+                    toast.error(`Answer ${j + 1} of Question ${i + 1} is empty!`);
+                    hasError = true
+                }
+                if (answer.isCorrect) {
+                    correctAnswerCount++
+                }
+            }
+            if (correctAnswerCount === 0) {
+                toast.error(`Question ${i + 1} must have at least one correct answer!`);
+                hasError = true
+            }
+        }
+        if (hasError) {
+            return
+        }
+        console.log('check ', questions);
+
+        let questionClone = _.cloneDeep(questions)
+
+        for (let i = 0; i < questionClone.length; i++) {
+            if (questionClone[i].imageFile) {
+                questionClone[i].imageFile = toBase64(questionClone[i].imageFile)
+            }
+        }
+        console.log('check clone', questionClone);
+
+        if (questions.length > 0) {
+            const payload = {
+                quizId: +selectedQuiz.value,
+                questions: questionClone,
+            };
+
+            const res = await postUpSertQuiz(payload);
+            if (res && res.EC === 0) {
+                toast.success(res.EM);
+            } else {
+                toast.error(res.EM);
+            }
+
+        } else {
+            // If no questions exist, create new questions for the quiz
+            for (const question of questions) {
+                const q = await postCreateQuestionForQuiz(
+                    +selectedQuiz.value,
+                    question.description,
+                    question.imageFile
+                );
+
+                // Create answers for each question
+                for (const answer of question.answers) {
+                    await postCreateAnswerForQuestion(
+                        answer.description,
+                        answer.isCorrect,
+                        q.DT.id
+                    );
+                }
+            }
+        }
     }
 
     return (
@@ -225,6 +346,7 @@ const ManageQuestion = (props) => {
                                                 <input
                                                     className='form-check-input isCorrect'
                                                     type='checkbox'
+                                                    checked={answer.isCorrect}
                                                     onChange={(event) => handleAnswerQuestion('CHECKBOX', question.id, answer.id, event.target.checked)}
                                                 />
                                                 <div className='answer-name'>
@@ -232,6 +354,7 @@ const ManageQuestion = (props) => {
                                                         <Form.Control
                                                             type="text"
                                                             placeholder="Answer"
+                                                            value={answer.description}
                                                             onChange={(event) => handleAnswerQuestion('INPUT', question.id, answer.id, event.target.value)}
                                                         />
                                                         <label>Answer {index + 1}</label>

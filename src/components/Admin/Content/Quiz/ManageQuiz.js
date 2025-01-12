@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { getAllQuizzesAdmin } from '../../../../services/ApiServices';
 import ModalUpdateQuiz from './ModalUpdateQuiz';
 import ModalDeleteQuiz from './ModalDeleteQuiz';
+import AssignQuiz from './AssignQuiz';
 
 const ManageQuiz = (props) => {
     const [listQuiz, setListQuiz] = useState([])
@@ -41,6 +42,9 @@ const ManageQuiz = (props) => {
                     <button className="btn btn-primary"
                         onClick={() => { setShowCreateQuiz(true) }}
                     >Add New Quiz</button>
+                </div>
+                <div className='assign-quizz'>
+                    <AssignQuiz />
                 </div>
                 <div className='list-quiz'>
                     <TableQuiz
