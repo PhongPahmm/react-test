@@ -143,17 +143,36 @@ const ManageQuestion = (props) => {
     const fetchQuizQA = async () => {
         const res = await getQuizWithQA(selectedQuiz.value)
         if (res && res.EC === 0) {
-            let newQA = []
-            for (let i = 0; i < res.DT.qa.length; i++) {
-                let q = res.DT.qa[i]
-                if (q.imageFile) {
-                    const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`, 'image/png');
-                    q.imageFile = URL.createObjectURL(file);
-                    q.imageName = `Question-${q.id}.png`;
+            if (!res.DT.qa || res.DT.qa.length === 0) {
+                // Nếu không có câu hỏi, khởi tạo trạng thái mặc định
+                setQuestions([
+                    {
+                        id: uuidv4(),
+                        description: '',
+                        imageFile: '',
+                        imageName: '',
+                        answers: [
+                            {
+                                id: uuidv4(),
+                                description: '',
+                                isCorrect: false
+                            }
+                        ]
+                    }
+                ]);
+            } else {
+                let newQA = []
+                for (let i = 0; i < res.DT.qa.length; i++) {
+                    let q = res.DT.qa[i]
+                    if (q.imageFile) {
+                        const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`, 'image/png');
+                        q.imageFile = URL.createObjectURL(file);
+                        q.imageName = `Question-${q.id}.png`;
+                    }
+                    newQA.push(q)
                 }
-                newQA.push(q)
+                setQuestions(newQA)
             }
-            setQuestions(newQA)
         }
     }
     // return a promise that resolves with a File instance
@@ -172,20 +191,17 @@ const ManageQuestion = (props) => {
     function toBase64() {
         var xhr = new XMLHttpRequest;
         xhr.responseType = 'blob';
-
         xhr.onload = function () {
             var recoveredBlob = xhr.response;
-
             var reader = new FileReader;
-
             reader.onload = function () {
                 var blobAsDataUrl = reader.result;
                 window.location = blobAsDataUrl;
             };
-
             reader.readAsDataURL(recoveredBlob);
         };
     }
+
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
         if (res && res.EC === 0) {
@@ -228,9 +244,8 @@ const ManageQuestion = (props) => {
             }
         }
         if (hasError) {
-            return
+            return;
         }
-        console.log('check ', questions);
 
         let questionClone = _.cloneDeep(questions)
 
@@ -239,7 +254,6 @@ const ManageQuestion = (props) => {
                 questionClone[i].imageFile = toBase64(questionClone[i].imageFile)
             }
         }
-        console.log('check clone', questionClone);
 
         if (questions.length > 0) {
             const payload = {
