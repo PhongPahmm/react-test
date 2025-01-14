@@ -255,36 +255,33 @@ const ManageQuestion = (props) => {
             }
         }
 
-        if (questions.length > 0) {
-            const payload = {
-                quizId: +selectedQuiz.value,
-                questions: questionClone,
-            };
 
-            const res = await postUpSertQuiz(payload);
-            if (res && res.EC === 0) {
-                toast.success(res.EM);
-            } else {
-                toast.error(res.EM);
-            }
+        const payload = {
+            quizId: +selectedQuiz.value,
+            questions: questionClone,
+        };
 
+        const res = await postUpSertQuiz(payload);
+        if (res && res.EC === 0) {
+            toast.success(res.EM);
         } else {
-            // If no questions exist, create new questions for the quiz
-            for (const question of questions) {
-                const q = await postCreateQuestionForQuiz(
-                    +selectedQuiz.value,
-                    question.description,
-                    question.imageFile
-                );
+            toast.error(res.EM);
+        }
+        // If no questions exist, create new questions for the quiz
+        for (const question of questions) {
+            const q = await postCreateQuestionForQuiz(
+                +selectedQuiz.value,
+                question.description,
+                question.imageFile
+            );
 
-                // Create answers for each question
-                for (const answer of question.answers) {
-                    await postCreateAnswerForQuestion(
-                        answer.description,
-                        answer.isCorrect,
-                        q.DT.id
-                    );
-                }
+            // Create answers for each question
+            for (const answer of question.answers) {
+                await postCreateAnswerForQuestion(
+                    answer.description,
+                    answer.isCorrect,
+                    q.DT.id
+                );
             }
         }
     }
