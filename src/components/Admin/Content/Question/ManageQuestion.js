@@ -11,6 +11,7 @@ import { getAllQuizzesAdmin, getQuizWithQA, postCreateAnswerForQuestion, postCre
 import { toast } from 'react-toastify';
 
 const ManageQuestion = (props) => {
+    const [hasChanges, setHasChanges] = useState(false);
     const [selectedQuiz, setSelectedQuiz] = useState({})
     const [listQuiz, setListQuiz] = useState([])
     const [previewImage, setPreviewImage] = useState('')
@@ -49,10 +50,12 @@ const ManageQuestion = (props) => {
                 ]
             }
             setQuestions([...questionClone, newQuestion])
+            setHasChanges(true)
         }
         if (type === 'REMOVE') {
             questionClone = questionClone.filter(item => item.id !== id)
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleBtnRemoveAddAnswer = (type, questionId, answerId) => {
@@ -78,6 +81,7 @@ const ManageQuestion = (props) => {
         if (type === 'QUESTION') {
             questionClone[indexQuestion].description = value
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleUploadFile = (questionId, event) => {
@@ -86,11 +90,10 @@ const ManageQuestion = (props) => {
         if (indexQuestion > -1 && event.target
             && event.target.files && event.target.files[0]) {
             const file = event.target.files[0]
-            if (file) {
-                questionClone[indexQuestion].imageFile = URL.createObjectURL(file)
-                questionClone[indexQuestion].imageName = file.name
-                setQuestions(questionClone)
-            }
+
+            questionClone[indexQuestion].imageFile = file
+            questionClone[indexQuestion].imageName = file.name
+            setQuestions(questionClone)
         }
     }
     const handleAnswerQuestion = (type, questionId, answerId, value) => {
@@ -113,22 +116,14 @@ const ManageQuestion = (props) => {
         }
     }
     const handlePreviewImage = (imageSrc) => {
-        setPreviewImage(imageSrc);
+        const objectURL = URL.createObjectURL(imageSrc);
+        setPreviewImage(objectURL);
+        return () => URL.revokeObjectURL(objectURL);
     };
 
     const closePreview = () => {
         setPreviewImage('');
     };
-
-    useEffect(() => {
-        return () => {
-            questions.forEach((question) => {
-                if (question.imageFile) {
-                    URL.revokeObjectURL(question.imageFile);
-                }
-            })
-        }
-    }, [questions])
 
     useEffect(() => {
         fetchListQuiz()
@@ -144,7 +139,6 @@ const ManageQuestion = (props) => {
         const res = await getQuizWithQA(selectedQuiz.value)
         if (res && res.EC === 0) {
             if (!res.DT.qa || res.DT.qa.length === 0) {
-                // Nếu không có câu hỏi, khởi tạo trạng thái mặc định
                 setQuestions([
                     {
                         id: uuidv4(),
@@ -166,7 +160,7 @@ const ManageQuestion = (props) => {
                     let q = res.DT.qa[i]
                     if (q.imageFile) {
                         const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`, 'image/png');
-                        q.imageFile = URL.createObjectURL(file);
+                        q.imageFile = file;
                         q.imageName = `Question-${q.id}.png`;
                     }
                     newQA.push(q)
@@ -188,19 +182,14 @@ const ManageQuestion = (props) => {
         return new File([u8arr], filename, { type: mime });
     }
 
-    function toBase64() {
-        var xhr = new XMLHttpRequest;
-        xhr.responseType = 'blob';
-        xhr.onload = function () {
-            var recoveredBlob = xhr.response;
-            var reader = new FileReader;
-            reader.onload = function () {
-                var blobAsDataUrl = reader.result;
-                window.location = blobAsDataUrl;
-            };
-            reader.readAsDataURL(recoveredBlob);
-        };
-    }
+    const toBase64 = (blob) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    };
 
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
@@ -216,6 +205,10 @@ const ManageQuestion = (props) => {
     }
 
     const handleSubmitQuestion = async () => {
+        if (!hasChanges) {
+            toast.info('No changes detected!');
+            return;
+        }
         if (_.isEmpty(selectedQuiz)) {
             toast.error('Pls assign a quiz!!!')
             return;
@@ -251,7 +244,7 @@ const ManageQuestion = (props) => {
 
         for (let i = 0; i < questionClone.length; i++) {
             if (questionClone[i].imageFile) {
-                questionClone[i].imageFile = toBase64(questionClone[i].imageFile)
+                questionClone[i].imageFile = await toBase64(questionClone[i].imageFile)
             }
         }
 
@@ -260,13 +253,18 @@ const ManageQuestion = (props) => {
             quizId: +selectedQuiz.value,
             questions: questionClone,
         };
+        console.log('check payload', payload);
 
         const res = await postUpSertQuiz(payload);
         if (res && res.EC === 0) {
-            toast.success(res.EM);
+            toast.success(res.EM)
+            setHasChanges(false)
+            fetchQuizQA()
         } else {
-            toast.error(res.EM);
+            toast.error(res.EM)
         }
+        console.log("check questions", questionClone);
+
         // If no questions exist, create new questions for the quiz
         for (const question of questions) {
             const q = await postCreateQuestionForQuiz(

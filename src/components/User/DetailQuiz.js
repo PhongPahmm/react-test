@@ -75,21 +75,6 @@ const DetailQuiz = (props) => {
     }
 
     const handleFinish = async () => {
-        console.log('data quiz before submit', dataQuiz);
-
-        // {
-        //     "quizId": 1,
-        //     "answers": [
-        //         { 
-        //             "questionId": 1,
-        //             "userAnswerId": [3]
-        //         },
-        //         { 
-        //             "questionId": 2,
-        //             "userAnswerId": [6]
-        //         }
-        //     ]
-        // }
         if (dataQuiz && dataQuiz.length > 0) {
             let payload = {
                 quizId: quizId,
