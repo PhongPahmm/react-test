@@ -69,10 +69,12 @@ const ManageQuestion = (props) => {
             }
             questionClone[indexQuestion].answers.push(newAnswer)
             setQuestions(questionClone)
+            setHasChanges(true)
         }
         if (type === 'REMOVE') {
             questionClone[indexQuestion].answers = questionClone[indexQuestion].answers.filter(item => item.id !== answerId)
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleOnChange = (type, questionId, value) => {
@@ -94,6 +96,7 @@ const ManageQuestion = (props) => {
             questionClone[indexQuestion].imageFile = file
             questionClone[indexQuestion].imageName = file.name
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleAnswerQuestion = (type, questionId, answerId, value) => {
@@ -105,14 +108,17 @@ const ManageQuestion = (props) => {
                     if (answer.id === answerId) {
                         if (type === 'CHECKBOX') {
                             answer.isCorrect = value
+                            setHasChanges(true)
                         }
                         if (type === 'INPUT') {
                             answer.description = value
+                            setHasChanges(true)
                         }
                     }
                     return answer
                 })
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handlePreviewImage = (imageSrc) => {
@@ -248,12 +254,10 @@ const ManageQuestion = (props) => {
             }
         }
 
-
         const payload = {
             quizId: +selectedQuiz.value,
             questions: questionClone,
         };
-        console.log('check payload', payload);
 
         const res = await postUpSertQuiz(payload);
         if (res && res.EC === 0) {
@@ -267,19 +271,22 @@ const ManageQuestion = (props) => {
 
         // If no questions exist, create new questions for the quiz
         for (const question of questions) {
-            const q = await postCreateQuestionForQuiz(
-                +selectedQuiz.value,
-                question.description,
-                question.imageFile
-            );
-
-            // Create answers for each question
-            for (const answer of question.answers) {
-                await postCreateAnswerForQuestion(
-                    answer.description,
-                    answer.isCorrect,
-                    q.DT.id
+            if (!hasChanges(question)) {
+                const q = await postCreateQuestionForQuiz(
+                    +selectedQuiz.value,
+                    question.description,
+                    question.imageFile
                 );
+                // Create answers for each question
+                for (const answer of question.answers) {
+                    if (!hasChanges(answer)) {
+                        await postCreateAnswerForQuestion(
+                            answer.description,
+                            answer.isCorrect,
+                            q.DT.id
+                        );
+                    }
+                }
             }
         }
     }

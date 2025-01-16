@@ -75,11 +75,12 @@ const DetailQuiz = (props) => {
     }
 
     const handleFinish = async () => {
+        let payload = {
+            quizId: quizId,
+            answers: []
+        }
+
         if (dataQuiz && dataQuiz.length > 0) {
-            let payload = {
-                quizId: quizId,
-                answers: []
-            }
             let answers = []
             dataQuiz.forEach(question => {
                 let questionId = question.questionId
