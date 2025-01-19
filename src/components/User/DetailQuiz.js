@@ -61,7 +61,7 @@ const DetailQuiz = (props) => {
 
         if (question && question.answer) {
             question.answer = question.answer.map(item => {
-                if (+item.id === + answerId) {
+                if (+item.id === +answerId) {
                     item.isSelected = !item.isSelected
                 }
                 return item
@@ -75,27 +75,12 @@ const DetailQuiz = (props) => {
     }
 
     const handleFinish = async () => {
-        console.log('data quiz before submit', dataQuiz);
-
-        // {
-        //     "quizId": 1,
-        //     "answers": [
-        //         { 
-        //             "questionId": 1,
-        //             "userAnswerId": [3]
-        //         },
-        //         { 
-        //             "questionId": 2,
-        //             "userAnswerId": [6]
-        //         }
-        //     ]
-        // }
+        let payload = {
+            quizId: +quizId,
+            answers: []
+        }
+        let answers = []
         if (dataQuiz && dataQuiz.length > 0) {
-            let payload = {
-                quizId: quizId,
-                answers: []
-            }
-            let answers = []
             dataQuiz.forEach(question => {
                 let questionId = question.questionId
                 let userAnswerId = []
@@ -105,23 +90,21 @@ const DetailQuiz = (props) => {
                     }
                 })
                 answers.push({
-                    questionId: questionId,
+                    questionId: +questionId,
                     userAnswerId: userAnswerId
                 })
             })
             payload.answers = answers
+        }
+        const res = await postSubmitAnswer(payload)
 
-            const res = await postSubmitAnswer(payload)
-            console.log("check res", res);
-
-            if (res && res.EC === 0) {
-                setDataModaResult({
-                    countCorrect: res.DT.countCorrect,
-                    countTotal: res.DT.countTotal,
-                    quizData: res.DT.quizData
-                })
-                setIsShowModalResult(true)
-            }
+        if (res && res.EC === 0) {
+            setDataModaResult({
+                countCorrect: res.DT.countCorrect,
+                countTotal: res.DT.countTotal,
+                quizData: res.DT.quizData
+            })
+            setIsShowModalResult(true)
         }
     }
 

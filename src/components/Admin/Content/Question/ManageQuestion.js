@@ -11,6 +11,7 @@ import { getAllQuizzesAdmin, getQuizWithQA, postCreateAnswerForQuestion, postCre
 import { toast } from 'react-toastify';
 
 const ManageQuestion = (props) => {
+    const [hasChanges, setHasChanges] = useState(false);
     const [selectedQuiz, setSelectedQuiz] = useState({})
     const [listQuiz, setListQuiz] = useState([])
     const [previewImage, setPreviewImage] = useState('')
@@ -49,10 +50,12 @@ const ManageQuestion = (props) => {
                 ]
             }
             setQuestions([...questionClone, newQuestion])
+            setHasChanges(true)
         }
         if (type === 'REMOVE') {
             questionClone = questionClone.filter(item => item.id !== id)
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleBtnRemoveAddAnswer = (type, questionId, answerId) => {
@@ -66,10 +69,12 @@ const ManageQuestion = (props) => {
             }
             questionClone[indexQuestion].answers.push(newAnswer)
             setQuestions(questionClone)
+            setHasChanges(true)
         }
         if (type === 'REMOVE') {
             questionClone[indexQuestion].answers = questionClone[indexQuestion].answers.filter(item => item.id !== answerId)
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleOnChange = (type, questionId, value) => {
@@ -78,6 +83,7 @@ const ManageQuestion = (props) => {
         if (type === 'QUESTION') {
             questionClone[indexQuestion].description = value
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleUploadFile = (questionId, event) => {
@@ -86,11 +92,11 @@ const ManageQuestion = (props) => {
         if (indexQuestion > -1 && event.target
             && event.target.files && event.target.files[0]) {
             const file = event.target.files[0]
-            if (file) {
-                questionClone[indexQuestion].imageFile = URL.createObjectURL(file)
-                questionClone[indexQuestion].imageName = file.name
-                setQuestions(questionClone)
-            }
+
+            questionClone[indexQuestion].imageFile = file
+            questionClone[indexQuestion].imageName = file.name
+            setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handleAnswerQuestion = (type, questionId, answerId, value) => {
@@ -102,33 +108,28 @@ const ManageQuestion = (props) => {
                     if (answer.id === answerId) {
                         if (type === 'CHECKBOX') {
                             answer.isCorrect = value
+                            setHasChanges(true)
                         }
                         if (type === 'INPUT') {
                             answer.description = value
+                            setHasChanges(true)
                         }
                     }
                     return answer
                 })
             setQuestions(questionClone)
+            setHasChanges(true)
         }
     }
     const handlePreviewImage = (imageSrc) => {
-        setPreviewImage(imageSrc);
+        const objectURL = URL.createObjectURL(imageSrc);
+        setPreviewImage(objectURL);
+        return () => URL.revokeObjectURL(objectURL);
     };
 
     const closePreview = () => {
         setPreviewImage('');
     };
-
-    useEffect(() => {
-        return () => {
-            questions.forEach((question) => {
-                if (question.imageFile) {
-                    URL.revokeObjectURL(question.imageFile);
-                }
-            })
-        }
-    }, [questions])
 
     useEffect(() => {
         fetchListQuiz()
@@ -143,17 +144,35 @@ const ManageQuestion = (props) => {
     const fetchQuizQA = async () => {
         const res = await getQuizWithQA(selectedQuiz.value)
         if (res && res.EC === 0) {
-            let newQA = []
-            for (let i = 0; i < res.DT.qa.length; i++) {
-                let q = res.DT.qa[i]
-                if (q.imageFile) {
-                    const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`, 'image/png');
-                    q.imageFile = URL.createObjectURL(file);
-                    q.imageName = `Question-${q.id}.png`;
+            if (!res.DT.qa || res.DT.qa.length === 0) {
+                setQuestions([
+                    {
+                        id: uuidv4(),
+                        description: '',
+                        imageFile: '',
+                        imageName: '',
+                        answers: [
+                            {
+                                id: uuidv4(),
+                                description: '',
+                                isCorrect: false
+                            }
+                        ]
+                    }
+                ]);
+            } else {
+                let newQA = []
+                for (let i = 0; i < res.DT.qa.length; i++) {
+                    let q = res.DT.qa[i]
+                    if (q.imageFile) {
+                        const file = dataURLtoFile(`data:image/png;base64,${q.imageFile}`, `Question-${q.id}.png`, 'image/png');
+                        q.imageFile = file;
+                        q.imageName = `Question-${q.id}.png`;
+                    }
+                    newQA.push(q)
                 }
-                newQA.push(q)
+                setQuestions(newQA)
             }
-            setQuestions(newQA)
         }
     }
     // return a promise that resolves with a File instance
@@ -169,23 +188,15 @@ const ManageQuestion = (props) => {
         return new File([u8arr], filename, { type: mime });
     }
 
-    function toBase64() {
-        var xhr = new XMLHttpRequest;
-        xhr.responseType = 'blob';
+    const toBase64 = (blob) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    };
 
-        xhr.onload = function () {
-            var recoveredBlob = xhr.response;
-
-            var reader = new FileReader;
-
-            reader.onload = function () {
-                var blobAsDataUrl = reader.result;
-                window.location = blobAsDataUrl;
-            };
-
-            reader.readAsDataURL(recoveredBlob);
-        };
-    }
     const fetchListQuiz = async () => {
         const res = await getAllQuizzesAdmin()
         if (res && res.EC === 0) {
@@ -200,6 +211,10 @@ const ManageQuestion = (props) => {
     }
 
     const handleSubmitQuestion = async () => {
+        if (!hasChanges) {
+            toast.info('No changes detected!');
+            return;
+        }
         if (_.isEmpty(selectedQuiz)) {
             toast.error('Pls assign a quiz!!!')
             return;
@@ -228,48 +243,49 @@ const ManageQuestion = (props) => {
             }
         }
         if (hasError) {
-            return
+            return;
         }
-        console.log('check ', questions);
 
         let questionClone = _.cloneDeep(questions)
 
         for (let i = 0; i < questionClone.length; i++) {
             if (questionClone[i].imageFile) {
-                questionClone[i].imageFile = toBase64(questionClone[i].imageFile)
+                questionClone[i].imageFile = await toBase64(questionClone[i].imageFile)
             }
         }
-        console.log('check clone', questionClone);
 
-        if (questions.length > 0) {
-            const payload = {
-                quizId: +selectedQuiz.value,
-                questions: questionClone,
-            };
+        const payload = {
+            quizId: +selectedQuiz.value,
+            questions: questionClone,
+        };
 
-            const res = await postUpSertQuiz(payload);
-            if (res && res.EC === 0) {
-                toast.success(res.EM);
-            } else {
-                toast.error(res.EM);
-            }
-
+        const res = await postUpSertQuiz(payload);
+        if (res && res.EC === 0) {
+            toast.success(res.EM)
+            setHasChanges(false)
+            fetchQuizQA()
         } else {
-            // If no questions exist, create new questions for the quiz
-            for (const question of questions) {
+            toast.error(res.EM)
+        }
+        console.log("check questions", questionClone);
+
+        // If no questions exist, create new questions for the quiz
+        for (const question of questions) {
+            if (!hasChanges(question)) {
                 const q = await postCreateQuestionForQuiz(
                     +selectedQuiz.value,
                     question.description,
                     question.imageFile
                 );
-
                 // Create answers for each question
                 for (const answer of question.answers) {
-                    await postCreateAnswerForQuestion(
-                        answer.description,
-                        answer.isCorrect,
-                        q.DT.id
-                    );
+                    if (!hasChanges(answer)) {
+                        await postCreateAnswerForQuestion(
+                            answer.description,
+                            answer.isCorrect,
+                            q.DT.id
+                        );
+                    }
                 }
             }
         }
